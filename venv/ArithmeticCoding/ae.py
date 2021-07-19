@@ -32,7 +32,6 @@ class Aencoder:
                 else:
                     self.freq_table[symbol] = 1
         total = sum(list(self.freq_table.values()))
-        sum1 = 0
         for key, value in self.freq_table.items():
             self.prob_table[key] = value/total
 
@@ -51,12 +50,9 @@ class Aencoder:
         while len(clone_file) >= self.block_size:
             self.str_list.append(clone_file[:self.block_size])
             clone_file = clone_file[self.block_size:]
-        self.str_list.append(clone_file)
+        if len(clone_file) > 0:
+            self.str_list.append(clone_file)
 
-
-    def print1(self):
-        for item in self.str_list:
-            print(item)
 
     # returns the size of the file
     def get_size(self):
@@ -96,7 +92,6 @@ class Aencoder:
             self.tag_list = self.encode_str(str)
 
 
-
     def encode_str(self, str):
         low, high, ctr = 0, 1, 0
         output = ""
@@ -108,5 +103,7 @@ class Aencoder:
             low, high, ctr, output = self.scaling(low, high, ctr, output)
         tag = (low+high) / 2
         print("output: ", output)
+        print("tag:", tag)
         return tag
+
 
