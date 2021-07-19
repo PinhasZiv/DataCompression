@@ -1,4 +1,4 @@
-
+import math
 
 class Aencoder:
     size = 0
@@ -6,13 +6,11 @@ class Aencoder:
     freq_table = {}
     prob_table = {}
     interval_table = {}
-    str_list = []
     tag_list = []
 
 
-    def __init__(self, path, block_size):
+    def __init__(self, path):
         self.path = path
-        self.block_size = block_size
 
     # get the text from the file into a String field 'file_str'. initial block_size
     def get_file_txt(self):
@@ -20,17 +18,14 @@ class Aencoder:
             self.file_str = file.read()
         print(self.file_str)
         self.size = len(self.file_str)
-        if self.size <= self.block_size:
-            self.block_size = self.size
 
     # convert freq_table into probability table
     def get_prob_table(self):
-        for str in self.str_list:
-            for symbol in str:
-                if symbol in self.freq_table:
-                    self.freq_table[symbol] += 1
-                else:
-                    self.freq_table[symbol] = 1
+        for symbol in self.file_str:
+            if symbol in self.freq_table:
+                self.freq_table[symbol] += 1
+            else:
+                self.freq_table[symbol] = 1
         total = sum(list(self.freq_table.values()))
         for key, value in self.freq_table.items():
             self.prob_table[key] = value/total
@@ -44,26 +39,16 @@ class Aencoder:
             sum1 += current_prob
 
 
-    # create a list of Strings based on block_size (to make the commpression easier)
-    def generate_str_list(self):
-        clone_file = self.file_str
-        while len(clone_file) >= self.block_size:
-            self.str_list.append(clone_file[:self.block_size])
-            clone_file = clone_file[self.block_size:]
-        if len(clone_file) > 0:
-            self.str_list.append(clone_file)
-
-
     # returns the size of the file
     def get_size(self):
         return self.size
 
     def add_c(self, i, num):
-        str = ""
+        str1 = ""
         while i > 0:
-            str += num
+            str1 += num
             i -= 1
-        return str
+        return str1
 
     def scaling(self, low, high, ctr, output):
         if (low >= 0.0) and (high < 0.5):
@@ -87,23 +72,41 @@ class Aencoder:
             return self.scaling(low, high, ctr, output)
         return low, high, ctr, output
 
-    def encode_file(self):
-        for str in self.str_list:
-            self.tag_list = self.encode_str(str)
+    def add_zeros(self, str2):
+        size = len(str2)
+        while size < 8:
+            str2 = str2 + '0'
+            size = size + 1
 
+        return str2
 
-    def encode_str(self, str):
-        low, high, ctr = 0, 1, 0
-        output = ""
-        for char in str:
+    def encode_str(self, str1):
+        low, high, ctr = 00000000, 99999999, 0
+        output = "."
+
+        for symbol in str1:
+            low = float(low)
+            high = float(high)
+            low = int(math.floor(low))
+            high = int(math.floor(high))
             range = high-low
-            high = low + self.interval_table[char][1]*range
-            low = low + self.interval_table[char][0]*range
+            high = low + self.interval_table[symbol][1]*range
+            low = low + self.interval_table[symbol][0]*range
 
-            low, high, ctr, output = self.scaling(low, high, ctr, output)
-        tag = (low+high) / 2
-        print("output: ", output)
-        print("tag:", tag)
-        return tag
+            low = self.add_zeros(str(math.floor(low)))
 
+            high = str(math.floor(high))
 
+            while low[0] == high[0]:
+                output = output + low[0]
+                low = low[1:]+'0'
+                high = high[1:]+'9'
+            if low[0] != high[0]:
+                if low[1] == '9' and high[1] == '0':
+                    low = low[0] + low[2:] + '0'
+                    high = high[0] + high[2:] + '9'
+                    ctr += 1
+
+        if output == '.':
+            output += str((int(high) + int(low))/2)
+        print(output)
