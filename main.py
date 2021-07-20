@@ -1,4 +1,4 @@
-from ArithmeticCoding.ae import Aencoder
+from ArithmeticCoding.ArithmeticCoding import Aencoder
 
 
 path = "C:\\Users\פינחס זיו\PycharmProjects\DataCompression\\venv\ArithmeticCoding\\newFile.txt"

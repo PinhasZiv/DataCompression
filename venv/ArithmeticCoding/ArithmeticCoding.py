@@ -1,4 +1,5 @@
 import math
+from decimal import Decimal, getcontext
 
 class Aencoder:
     size = 0
@@ -12,14 +13,15 @@ class Aencoder:
     def __init__(self, path):
         self.path = path
 
-    # get the text from the file into a String field 'file_str'. initial block_size
+    # get the text from the file into a String field 'file_str'.
     def get_file_txt(self):
         with open(self.path, 'rb') as file:
             self.file_str = file.read()
         print(self.file_str)
         self.size = len(self.file_str)
 
-    # convert freq_table into probability table
+    # initial freq_table by scanning the file_str.
+    # initial prob_table by going through the freq_table
     def get_prob_table(self):
         for symbol in self.file_str:
             if symbol in self.freq_table:
@@ -72,10 +74,10 @@ class Aencoder:
             return self.scaling(low, high, ctr, output)
         return low, high, ctr, output
 
-    def add_zeros(self, str2):
+    def fill_num(self, str2, digit):
         size = len(str2)
         while size < 8:
-            str2 = str2 + '0'
+            str2 = str2 + digit
             size = size + 1
 
         return str2
@@ -85,15 +87,18 @@ class Aencoder:
         output = "."
 
         for symbol in str1:
+
             low = float(low)
             high = float(high)
-            low = int(math.floor(low))
-            high = int(math.floor(high))
-            range = high-low
+
+            low = int(self.fill_num(str(math.floor(low)), '0'))
+            high = int(self.fill_num(str(math.floor(high)), '0'))
+
+            range = high-low + 1
             high = low + self.interval_table[symbol][1]*range
             low = low + self.interval_table[symbol][0]*range
 
-            low = self.add_zeros(str(math.floor(low)))
+            low = self.fill_num(str(math.floor(low)), '0')
 
             high = str(math.floor(high))
 
