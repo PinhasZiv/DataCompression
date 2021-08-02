@@ -12,14 +12,14 @@ getcontext().prec = 20
 
 class Aencoder:
 
-    def __init__(self, path, out_path):
-        self.path = path
+    def __init__(self, in_path, out_path):
+        self.in_path = in_path
         self.size = 0
         self.file_str = None
         self.freq_table = {}
         self.prob_table = {}
         self.interval_table = {}
-        self.tag_list = []
+        # self.tag_list = []
         self.output_num = None
         self.out_path = out_path
 
@@ -28,7 +28,7 @@ class Aencoder:
     initial field 'size'
     '''
     def get_file_txt(self):
-        with open(self.path, 'rb') as file:
+        with open(self.in_path, 'rb') as file:
             self.file_str = file.read()
         print(self.file_str)
         self.size = len(self.file_str)
@@ -119,7 +119,7 @@ class Aencoder:
         if output == "0x":
             output = hex(math.floor((int(high, 16) + int(low, 16)) / 2))
         else:
-            add = hex(int((int(high, 16) + int(low, 16)) / 2))[2:]
+            add = hex(int((int(high, 16) + int(low, 16)) / 2))[2:4]
             output += add
         self.output_num = output
         print("output_num:", output)

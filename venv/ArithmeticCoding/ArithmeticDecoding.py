@@ -7,19 +7,18 @@ getcontext().prec = 20
 
 class Adecoder:
 
-    def __init__(self, path, prob, size_str, num=0):
-        self.path = path
+    def __init__(self, in_path, out_path, interval, size_str, num=0):
+        self.in_path = in_path
+        self.out_path = out_path
         self.num = num
-        self.prob_table = prob
+        self.interval_table = interval
         self.size_str = size_str
-        self.interval_table = {}
-        self.change_interval_table = {}
         self.file_str = ""
 
     # get the text from the file into a String field 'file_str'.
     def get_file_txt(self):
-        with open(self.path, 'rb') as file:
-            file_size = os.stat(self.path).st_size
+        with open(self.in_path, 'rb') as file:
+            file_size = os.stat(self.in_path).st_size
             for i in range(file_size):
                 num = int.from_bytes(file.read(1), "big")
                 num2 = num % 16
@@ -27,14 +26,6 @@ class Adecoder:
                 self.file_str += hex(num1)[2] + hex(num2)[2]
         # print(self.file_str)
         self.size = len(self.file_str)
-
-    def get_interval_table(self):
-        sum1 = 0
-        for key, value in self.prob_table.items():
-            current_prob = value
-            self.interval_table[key] = [sum1, sum1 + current_prob]
-            sum1 += current_prob
-        self.change_interval_table = self.interval_table
 
     def fill_num(self, str_num, digit):
         size = len(str_num)
@@ -52,20 +43,20 @@ class Adecoder:
         else:
             num = self.num[:18]
             rest = self.num[18:]
-        output = ""
+        output = bytearray()
         height = int(high, 16) - int(low, 16) + 1
         for i in range(self.size_str):
-            for symbol, value in self.interval_table.items():
+            for symbol in self.interval_table:
                 # print("symbol:", symbol, ", high_value:", str(math.floor(int(low) + value[1]*height - 1)), ", low_value:", str(math.floor(int(low) + value[0] * height)),
                 #       ", num:", num)
 
-                if int(math.floor(int(low, 16) + value[0] * height)) <= int(num, 16) < int(
-                        math.floor(int(low, 16) + value[1] * height - 1)):
+                if int(math.floor(int(low, 16) + self.interval_table[symbol][0] * height)) <= int(num, 16) < int(
+                        math.floor(int(low, 16) + self.interval_table[symbol][1] * height - 1)):
                     # if int(num) >= int(math.floor(int(low) + value[0] * height)) and int(str(int(num))[:15] +'0') < int(str(int(math.floor(int(low) + value[1] * height - 1)))[:15]+'1'):
 
-                    output = output + chr(symbol)
-                    high = hex(math.floor(int(low, 16) + value[1] * height - 1))
-                    low = hex(math.floor(int(low, 16) + value[0] * height))
+                    output = output + bytearray([symbol])
+                    high = hex(math.floor(int(low, 16) + self.interval_table[symbol][1] * height - 1))
+                    low = hex(math.floor(int(low, 16) + self.interval_table[symbol][0] * height))
 
                     # need to find how should we know which type needed to convert back?
                     # print("symbol:", symbol, "high:", high, ", low:", low, ", height:", height, ", num:", num)
@@ -104,8 +95,7 @@ class Adecoder:
                     break
 
         print("decompressed file:", output)
-        path = r"C:\Users\פינחס זיו\Desktop\venv\ArithmeticCoding\longFileOutDecompressed.bmp"
-        out = open(path, "w", newline='')
-        out.write(str(output))
+        out = open(self.out_path, 'wb')
+        out.write(output)
         print(len(output))
         out.close()
