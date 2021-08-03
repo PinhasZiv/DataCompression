@@ -1,5 +1,6 @@
 import math
 import collections
+import json
 from decimal import Decimal, getcontext
 import os
 
@@ -125,8 +126,31 @@ class Aencoder:
         print("output_num:", output)
         print("num_size:", len(output))
 
-    def write_output_file(self, path):
+    def write_output_file(self):
+        size_hex = hex(self.size)
+
         with open(self.out_path, "wb") as out:
+            num = self.size.to_bytes(4, byteorder='big')
+            print(num)
+            print(int.from_bytes(num, 'big'))
+            out.write(num)
+
+            # write the num of symbols in the freq table - 1 byte size
+
+            # 5 bytes each symbol: 1 bytes for key, 4 bytes for value.
+            # need to understand how to read specific num of bytes.
+
+            dict = ""
+            for key, value in self.freq_table.items():
+                key_hex = hex(key)[2:]
+                print("key:", key_hex, "type:", type(key_hex))
+                out.write(bytearray([key]))
+                value_hex = hex(value)[2:]
+                out.write(bytearray([value]))
+                print("value:", value)
+
+
+
             for i in range(2, len(self.output_num), 2):
                 if i == len(self.output_num) -2:
                     num = self.output_num[i] + "0"
@@ -134,4 +158,5 @@ class Aencoder:
                     num = self.output_num[i:i + 2]
 
                 out.write(bytearray([int(num, 16)]))
+                print("num:", num, "type:", type(num))
         print(f"output file size: {os.stat(self.out_path).st_size}")

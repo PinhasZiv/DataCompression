@@ -24,7 +24,7 @@ class Adecoder:
                 num2 = num % 16
                 num1 = num // 16
                 self.file_str += hex(num1)[2] + hex(num2)[2]
-        # print(self.file_str)
+        print(self.file_str)
         self.size = len(self.file_str)
 
     def fill_num(self, str_num, digit):
@@ -95,7 +95,6 @@ class Adecoder:
                     break
 
         print("decompressed file:", output)
-        out = open(self.out_path, 'wb')
-        out.write(output)
-        print(len(output))
-        out.close()
+        with open(self.out_path, 'wb') as out:
+            out.write(output)
+            print(len(output))
