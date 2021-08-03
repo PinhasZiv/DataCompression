@@ -7,25 +7,56 @@ getcontext().prec = 20
 
 class Adecoder:
 
-    def __init__(self, in_path, out_path, interval, size_str, num=0):
+    def __init__(self, in_path, out_path):
         self.in_path = in_path
         self.out_path = out_path
-        self.num = num
-        self.interval_table = interval
-        self.size_str = size_str
+        self.size_str = 0
+        self.prob_table = {}
+        self.interval_table = {}
         self.file_str = ""
 
     # get the text from the file into a String field 'file_str'.
     def get_file_txt(self):
         with open(self.in_path, 'rb') as file:
-            file_size = os.stat(self.in_path).st_size
-            for i in range(file_size):
+            # get size of original file from compressed file.
+            size_of_file = int.from_bytes(file.read(4), 'big')
+            print("size_of_file:", size_of_file)
+            self.size_str = size_of_file
+
+            # get number of items in freq table
+            freq_size = int.from_bytes(file.read(1), 'big')
+            print("size of freq table: after!!", freq_size)
+
+            # get freq table from compressed file
+            freq_table = {}
+            for i in range(freq_size):
+                symbol = int.from_bytes(file.read(1), 'big')
+                num2 = symbol % 16
+                num1 = symbol // 16
+                val = int.from_bytes(file.read(4), 'big')
+                freq_table[symbol] = val
+
+            self.get_prob_table(freq_table)
+
+            compressed_file_size = os.stat(self.in_path).st_size
+            for i in range(compressed_file_size):
                 num = int.from_bytes(file.read(1), "big")
                 num2 = num % 16
                 num1 = num // 16
                 self.file_str += hex(num1)[2] + hex(num2)[2]
         print(self.file_str)
         self.size = len(self.file_str)
+
+    def get_prob_table(self, freq_table):
+        total = sum(list(freq_table.values()))
+        for key, value in freq_table.items():
+            self.prob_table[key] = Decimal(Decimal(value) / Decimal(total))
+
+        sum1 = 0
+        for key, value in self.prob_table.items():
+            current_prob = value
+            self.interval_table[key] = (sum1, sum1 + current_prob)
+            sum1 += current_prob
 
     def fill_num(self, str_num, digit):
         size = len(str_num)

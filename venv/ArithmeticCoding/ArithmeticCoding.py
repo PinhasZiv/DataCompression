@@ -130,29 +130,33 @@ class Aencoder:
         size_hex = hex(self.size)
 
         with open(self.out_path, "wb") as out:
-            num = self.size.to_bytes(4, byteorder='big')
+            num = self.size.to_bytes(4, 'big')
             print(num)
             print(int.from_bytes(num, 'big'))
             out.write(num)
 
             # write the num of symbols in the freq table - 1 byte size
+            freq_table_size = len(self.freq_table)
+            out.write(freq_table_size.to_bytes(1, 'big'))
+            print("size of freq table:", freq_table_size.to_bytes(1, 'big'))
 
             # 5 bytes each symbol: 1 bytes for key, 4 bytes for value.
-            # need to understand how to read specific num of bytes.
-
-            dict = ""
-            for key, value in self.freq_table.items():
-                key_hex = hex(key)[2:]
-                print("key:", key_hex, "type:", type(key_hex))
-                out.write(bytearray([key]))
-                value_hex = hex(value)[2:]
-                out.write(bytearray([value]))
-                print("value:", value)
-
+            for symbol, value in self.freq_table.items():
+                out.write(symbol.to_bytes(1, 'big'))
+                out.write(value.to_bytes(4, 'big'))
+            # dict = ""
+            # for key, value in self.freq_table.items():
+            #     key1 = key.to_bytes(1, 'big')
+            #     print("key:", key1, "type:", type(key1))
+            #     out.write(key1)
+            #     value_hex = hex(value)[2:]
+            #     out.write(bytearray([value]))
+            #     print("value:", value)
+            #
 
 
             for i in range(2, len(self.output_num), 2):
-                if i == len(self.output_num) -2:
+                if i == len(self.output_num) -3:
                     num = self.output_num[i] + "0"
                 else:
                     num = self.output_num[i:i + 2]
