@@ -1,15 +1,29 @@
-from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QApplications, QMainWindow
-import sys
+import kivy
+from kivy.app import App
+from kivy.uix.floatlayout import FloatLayout
+# from kivy.uix.label import Label
+# from kivy.uix.gridlayout import GridLayout
+# from kivy.uix.textinput import TextInput
+# from kivy.uix.bubble import Button
+# from kivy.uix.widget import Widget
+# from kivy.properties import ObjectProperty
+#
+
+# class MyGrid(Widget):
+#     first = ObjectProperty(None)
+#     last = ObjectProperty(None)
+#
+#     def btn(self):
+#         print("First Name:", self.first.text, ", Last Name:", self.last.text)
+#         self.first.text = ""
+#         self.last.text = ""
+#
+
+class CompressorApp(App):
+
+    def build(self):
+        return FloatLayout()
 
 
-def window():
-    app = QApplications(sys.argv)
-    win = QMainWindow()
-    win.setGeometry(200, 200, 300, 300)
-    win.setWindowTitle("Arithmetic Compression")
-
-    win.show()
-    sys.exit(app.exec_())
-
-    window()
+if __name__ == "__main__":
+    CompressorApp().run()

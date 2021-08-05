@@ -156,7 +156,7 @@ class Aencoder:
 
 
             for i in range(2, len(self.output_num), 2):
-                if i == len(self.output_num) -3:
+                if i == len(self.output_num) -1:
                     num = self.output_num[i] + "0"
                 else:
                     num = self.output_num[i:i + 2]
