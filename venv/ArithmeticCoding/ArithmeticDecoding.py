@@ -78,19 +78,12 @@ class Adecoder:
         height = int(high, 16) - int(low, 16) + 1
         for i in range(self.size_str):
             for symbol in self.interval_table:
-                # print("symbol:", symbol, ", high_value:", str(math.floor(int(low) + value[1]*height - 1)), ", low_value:", str(math.floor(int(low) + value[0] * height)),
-                #       ", num:", num)
 
                 if int(math.floor(int(low, 16) + self.interval_table[symbol][0] * height)) <= int(num, 16) < int(
                         math.floor(int(low, 16) + self.interval_table[symbol][1] * height - 1)):
-                    # if int(num) >= int(math.floor(int(low) + value[0] * height)) and int(str(int(num))[:15] +'0') < int(str(int(math.floor(int(low) + value[1] * height - 1)))[:15]+'1'):
-
                     output = output + bytearray([symbol])
                     high = hex(math.floor(int(low, 16) + self.interval_table[symbol][1] * height - 1))
                     low = hex(math.floor(int(low, 16) + self.interval_table[symbol][0] * height))
-
-                    # need to find how should we know which type needed to convert back?
-                    # print("symbol:", symbol, "high:", high, ", low:", low, ", height:", height, ", num:", num)
 
                     while len(low) < 18:
                         low = low[:2] + '0' + low[2:]

@@ -1,29 +1,93 @@
-import kivy
-from kivy.app import App
-from kivy.uix.floatlayout import FloatLayout
-# from kivy.uix.label import Label
-# from kivy.uix.gridlayout import GridLayout
-# from kivy.uix.textinput import TextInput
-# from kivy.uix.bubble import Button
-# from kivy.uix.widget import Widget
-# from kivy.properties import ObjectProperty
-#
+import os.path
+from tkinter import *
+from tkinter import filedialog
+from ArithmeticCoding import Aencoder
+from ArithmeticDecoding import Adecoder
 
-# class MyGrid(Widget):
-#     first = ObjectProperty(None)
-#     last = ObjectProperty(None)
-#
-#     def btn(self):
-#         print("First Name:", self.first.text, ", Last Name:", self.last.text)
-#         self.first.text = ""
-#         self.last.text = ""
-#
+root = Tk()
+root.title("Arithmetic Compression")
 
-class CompressorApp(App):
+def on_click():
+    label = Label(root, text="clicked!!")
+    label.grid(row=3, column=1)
 
-    def build(self):
-        return FloatLayout()
+def browseFiles():
+    global file_path
+    global out
+    file_path = filedialog.askopenfilename(initialdir = "/",
+                                          title = "Select a File",
+                                          filetypes = (("Text files",
+                                                        "*.txt*"),
+                                                       ("all files",
+                                                        "*.*")))
+    head, tail = os.path.split(file_path)
+    out = head + "/CompressedFile.txt"
+    return file_path, out
+
+def compress_file():
+    compress(file_path, out)
 
 
-if __name__ == "__main__":
-    CompressorApp().run()
+compression_label = Label(root, text="Compression", fg="blue", width = 50)
+compression_label.grid(row=0, column=1)
+
+button_explore = Button(root,
+                        text = "Browse Files",
+                        command = browseFiles)
+button_explore.grid(column=1, row=2)
+
+button_compress = Button(root,
+                        text = "Compress",
+                        command = compress_file)
+button_compress.grid(column=1, row=3)
+
+
+
+
+def browseFilesToDecompress():
+    global file_path
+    global out
+    file_path = filedialog.askopenfilename(initialdir = "/",
+                                          title = "Select a File",
+                                          filetypes = (("Text files",
+                                                        "*.txt*"),
+                                                       ("all files",
+                                                        "*.*")))
+    head, tail = os.path.split(file_path)
+    out = head + "/DecompressedFile.txt"
+    return file_path, out
+
+def decompress_file():
+    decompress(file_path, out)
+
+
+decompression_label = Label(root, text="Decompression", fg="purple", width=50)
+decompression_label.grid(row=0, column=0)
+
+
+button_choose_to_decompress = Button(root,
+                        text = "Browse file",
+                        command = browseFilesToDecompress)
+button_choose_to_decompress.grid(row=2, column=0)
+
+button_decompress = Button(root,
+                        text = "Decompress",
+                        command = decompress_file)
+button_decompress.grid(row=3, column=0)
+
+
+def compress(in_path, out_path):
+    x1 = Aencoder(in_path, out_path)
+    x1.get_file_txt()
+    x1.get_prob_table()
+    x1.get_interval_table()
+    x1.encode_str()
+    x1.write_output_file()
+
+def decompress(old_path, out_path):
+    x2 = Adecoder(old_path, out_path)
+    x2.get_file_txt()
+    x2.decode_num()
+
+
+root.mainloop()
