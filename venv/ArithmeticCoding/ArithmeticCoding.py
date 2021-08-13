@@ -1,6 +1,5 @@
 import math
 import collections
-import json
 from decimal import Decimal, getcontext
 import os
 
@@ -20,7 +19,6 @@ class Aencoder:
         self.freq_table = {}
         self.prob_table = {}
         self.interval_table = {}
-        # self.tag_list = []
         self.output_num = None
         self.out_path = out_path
 
@@ -31,9 +29,7 @@ class Aencoder:
     def get_file_txt(self):
         with open(self.in_path, 'rb') as file:
             self.file_str = file.read()
-        print(self.file_str)
         self.size = len(self.file_str)
-        print("message size:", self.size)
 
     '''
     Iterate over "file_str" and create the 'freq_table' field
@@ -47,11 +43,9 @@ class Aencoder:
         total = sum(list(self.freq_table.values()))
         for key, value in self.freq_table.items():
             self.prob_table[key] = Decimal(Decimal(value) / Decimal(total))
-        # sorting the prob_table. not necessary.
-        # self.prob_table = collections.OrderedDict(sorted(self.prob_table.items()))
 
     '''
-    Repeat 'freq_table' and create the 'interval_table' field which stores the interval [0: 1),
+    Iterate over 'freq_table' and create the 'interval_table' field which stores the interval [0: 1),
     divided into sub-intervals according to the probability of each character in the file.
     '''
     def get_interval_table(self):
@@ -75,7 +69,9 @@ class Aencoder:
         return str_num
 
     '''
-    
+    Encrypt the file using arithmetic encoding.
+    The coding is performed using a 16-digit integer implementation method,
+    based on a hexa decimal base.
     '''
     def encode_str(self):
         low, high, ctr = '0x' + '0' * 16, '0x' + 'f' * 16, 0
@@ -104,16 +100,15 @@ class Aencoder:
                 low = low[:2] + low[3:] + '0'
                 high = high[:2] + high[3:] + 'f'
 
+            '''
+            Performing scaling
+            '''
             while int(high[2], 16) - int(low[2], 16) == 1 and (low[3] == 'f' and high[3] == '0'):
-                # if low[1] == '9' and high[1] == '0':
-                #   print("before scaling:", "high:", high, ", low:", low,)
                 low = low[:3] + low[4:] + '0'
                 high = high[:3] + high[4:] + 'f'
                 ctr += 1
                 save_low = low[2]
                 save_high = high[2]
-                # print("DO SCALING")
-                # print("after scaling:", "high:", high, ", low:", low, )
 
             height = int(high, 16) - int(low, 16) + 1
 
@@ -123,37 +118,26 @@ class Aencoder:
             add = hex(int((int(high, 16) + int(low, 16)) / 2))[2:4]
             output += add
         self.output_num = output
-        print("output_num:", output)
-        print("num_size:", len(output))
 
+    '''
+    Writing the compressed file that contains:
+    Original file size, Freq table size, freq table, The encoded number
+    '''
     def write_output_file(self):
         size_hex = hex(self.size)
 
         with open(self.out_path, "wb") as out:
             num = self.size.to_bytes(4, 'big')
-            print(num)
-            print(int.from_bytes(num, 'big'))
             out.write(num)
 
             # write the num of symbols in the freq table - 1 byte size
             freq_table_size = len(self.freq_table)
             out.write(freq_table_size.to_bytes(1, 'big'))
-            print("size of freq table:", freq_table_size.to_bytes(1, 'big'))
 
-            # 5 bytes each symbol: 1 bytes for key, 4 bytes for value.
+            # 5 bytes each symbol - 1 bytes for key, 4 bytes for value.
             for symbol, value in self.freq_table.items():
                 out.write(symbol.to_bytes(1, 'big'))
                 out.write(value.to_bytes(4, 'big'))
-            # dict = ""
-            # for key, value in self.freq_table.items():
-            #     key1 = key.to_bytes(1, 'big')
-            #     print("key:", key1, "type:", type(key1))
-            #     out.write(key1)
-            #     value_hex = hex(value)[2:]
-            #     out.write(bytearray([value]))
-            #     print("value:", value)
-            #
-
 
             for i in range(2, len(self.output_num), 2):
                 if i == len(self.output_num) -1:
@@ -162,5 +146,3 @@ class Aencoder:
                     num = self.output_num[i:i + 2]
 
                 out.write(bytearray([int(num, 16)]))
-                print("num:", num, "type:", type(num))
-        print(f"output file size: {os.stat(self.out_path).st_size}")

@@ -2,6 +2,10 @@ import math
 from decimal import Decimal, getcontext
 import os
 
+'''
+Decimal is used to avoid the inaccuracy of a decimal number in 'freq_table'.
+Decimal allows us to select the accuracy level of the decimal number
+'''
 getcontext().prec = 20
 
 
@@ -15,17 +19,17 @@ class Adecoder:
         self.interval_table = {}
         self.file_str = ""
 
-    # get the text from the file into a String field 'file_str'.
+    '''
+     Reading the data from the compressed file into the fields. 
+    '''
     def get_file_txt(self):
         with open(self.in_path, 'rb') as file:
             # get size of original file from compressed file.
             size_of_file = int.from_bytes(file.read(4), 'big')
-            print("size_of_file:", size_of_file)
             self.size_str = size_of_file
 
             # get number of items in freq table
             freq_size = int.from_bytes(file.read(1), 'big')
-            print("size of freq table: after!!", freq_size)
 
             # get freq table from compressed file
             freq_table = {}
@@ -44,9 +48,11 @@ class Adecoder:
                 num2 = num % 16
                 num1 = num // 16
                 self.file_str += hex(num1)[2] + hex(num2)[2]
-        print(self.file_str)
         self.size = len(self.file_str)
 
+    '''
+    Create 'prob_table' and 'interval_table' using 'freq_table'
+    '''
     def get_prob_table(self, freq_table):
         total = sum(list(freq_table.values()))
         for key, value in freq_table.items():
@@ -58,6 +64,12 @@ class Adecoder:
             self.interval_table[key] = (sum1, sum1 + current_prob)
             sum1 += current_prob
 
+    '''
+    Gets 2 parameters: string and number.
+    Checks if the string length is less than 18.
+    If it is small - add at the end of the string the digit obtained as a parameter
+    until the string is completed to size 16.
+    '''
     def fill_num(self, str_num, digit):
         size = len(str_num)
         while size < 18:
@@ -65,6 +77,9 @@ class Adecoder:
             size = size + 1
         return str_num
 
+    '''
+    Recover the original file using the data collected from the compressed file
+    '''
     def decode_num(self):
         low, high, ctr = '0x' + '0' * 16, '0x' + 'f' * 16, 0
         rest = 0
@@ -103,8 +118,6 @@ class Adecoder:
                             num = '0x' + num[2:] + '0'
 
                     while int(high[2], 16) - int(low[2], 16) == 1 and (low[3] == 'f' and high[3] == '0'):
-                        # if low[1] == '9' and high[1] == '0':
-                        #     print("before scaling:", "high:", high, ", low:", low, )
                         low = '0x' + low[2] + low[4:] + '0'
                         high = '0x' + high[2] + high[4:] + 'f'
                         num = '0x' + num[2] + num[4:]
@@ -113,12 +126,9 @@ class Adecoder:
                             rest = rest[1:]
                         else:
                             num = '0x' + num[2:] + '0'
-                        # print("after scaling:", "high:", high, ", low:", low, )
 
                     height = int(high, 16) - int(low, 16) + 1
                     break
 
-        print("decompressed file:", output)
         with open(self.out_path, 'wb') as out:
             out.write(output)
-            print(len(output))
