@@ -44,10 +44,10 @@ compression_label.grid(row=0, column=1)
 '''
 Initialize button for selecting a document and placing it in the GUI window.
 '''
-button_explore = Button(root,
+button_explore_compress = Button(root,
                         text = "Browse Files",
                         command = browseFilesToCompress)
-button_explore.grid(column=1, row=2)
+button_explore_compress.grid(column=1, row=2)
 
 '''
 Initialize a button to compress a document and place it in the GUI window.
@@ -108,10 +108,10 @@ decompression_label.grid(row=0, column=0)
 '''
 Initialize button for selecting a document and placing it in the GUI window.
 '''
-button_choose_to_decompress = Button(root,
+button_explore_decompress = Button(root,
                         text = "Browse file",
                         command = browseFilesToDecompress)
-button_choose_to_decompress.grid(row=2, column=0)
+button_explore_decompress.grid(row=2, column=0)
 
 '''
 Initialize a button to decompress a document and place it in the GUI window.
